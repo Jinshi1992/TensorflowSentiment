@@ -35,9 +35,9 @@ class SentimentModel(object):
         #self._targets = tf.placeholder(tf.int32, [batch_size, num_steps])
 
         #add LSTM cell and dropout nodes
-        self.cell = tf.nn.rnn_cell.BasicLSTMCell(size, forget_bias=0.0)
+        cell = tf.nn.rnn_cell.BasicLSTMCell(size, forget_bias=0.0)
         if is_training and config.keep_prob < 1:
-            self.cell = tf.nn.rnn_cell.DropoutWrapper(self.cell, output_keep_prob=config.keep_prob)
+            cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=config.keep_prob)
 
         self.initial_state = cell.zero_state(batch_size, tf.float32)
 
@@ -143,8 +143,8 @@ def get_minibatches_idx(n, batch_size, shuffle=False):
 
 def run_epoch(session, m, data, eval_op, verbose=False):
     print("batch size", m.batch_size)
-    state = m.cell.zero_state(batch_size[0], tf.float32)
-    #state = m.initial_state.eval()
+    #state = m.cell.zero_state(batch_size[0], tf.float32)
+    state = m.initial_state
     n_samples = data[0].shape[1]
     print("Testing %d samples:"%(n_samples))
    
