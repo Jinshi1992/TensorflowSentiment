@@ -143,7 +143,7 @@ def get_minibatches_idx(n, batch_size, shuffle=False):
 
 def run_epoch(session, m, data, eval_op, verbose=False):
     print("batch size", m.batch_size)
-    state = cell.zero_state(batch_size[0], tf.float32)
+    state = m.cell.zero_state(batch_size[0], tf.float32)
     #state = m.initial_state.eval()
     n_samples = data[0].shape[1]
     print("Testing %d samples:"%(n_samples))
