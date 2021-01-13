@@ -39,7 +39,7 @@ class SentimentModel(object):
         if is_training and config.keep_prob < 1:
             cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=config.keep_prob)
 
-        self.initial_state = cell.zero_state(batch_size, tf.float32)
+       # self.initial_state = cell.zero_state(batch_size, tf.float32)
 
         with tf.device("/cpu:0"):
             embedding = tf.get_variable("embedding", [vocab_size, size])
@@ -50,13 +50,35 @@ class SentimentModel(object):
             inputs = tf.nn.dropout(inputs, config.keep_prob)
 
         outputs = []
-        state = self.initial_state
-        with tf.variable_scope("RNN"):
-            for time_step in range(num_steps):
-                if time_step > 0:
-                    tf.get_variable_scope().reuse_variables()
-                (cell_output, state) = cell(inputs[time_step, :, :], state)
-                outputs.append(tf.expand_dims(cell_output, 0))
+        #state = self.initial_state
+        #with tf.variable_scope("RNN"):
+            #f#or time_step in range(num_steps):
+                #if time_step > 0:
+                   # tf.get_variable_scope().reuse_variables()
+                #(cell_output, state) = cell(inputs[time_step, :, :], state)
+               # outputs.append(tf.expand_dims(cell_output, 0))
+                
+                
+                
+                
+        with tf.variable_scope("bi-lstm"):
+            #cell_fw = LSTMCell(self.hidden_dim)
+            #cell_bw = LSTMCell(self.hidden_dim)
+            #(output_fw_seq, output_bw_seq), _ = tf.nn.bidirectional_dynamic_rnn(
+            #    cell_fw=cell_fw,
+             #   cell_bw=cell_bw,
+            #    inputs=self.word_embeddings,
+            #    #sequence_length=self.sequence_lengths,
+            #    dtype=tf.float32)
+            
+            cell_fw = tf.contrib.rnn.LSTMBlockFusedCell(size)
+            cell_bw = tf.contrib.rnn.LSTMBlockFusedCell(size)
+            cell_bw = tf.contrib.rnn.TimeReversedFusedRNN(cell_bw)
+            output_fw_seq, _ = cell_fw(inputs, dtype=tf.float32)
+            output_bw_seq, _ = cell_bw(inputs, dtype=tf.float32)
+
+            output = tf.concat([output_fw_seq, output_bw_seq], axis=-1)
+            #output = tf.nn.dropout(output, self.dropout_pl)
         
         outputs = tf.concat(outputs,0)*mask
         mask_sum = tf.reduce_sum(mask, 0)
@@ -69,7 +91,6 @@ class SentimentModel(object):
         pred = tf.nn.softmax(logits)
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = labels, logits = logits) 
         self.cost = cost = tf.reduce_sum(loss) / batch_size
-        self.final_state = state
         correct_prediction = tf.equal(tf.argmax(pred,1), labels)
         self.accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
 
@@ -142,11 +163,7 @@ def get_minibatches_idx(n, batch_size, shuffle=False):
 
 
 def run_epoch(session, m, data, eval_op, verbose=False):
-    print("batch size", m.batch_size)
-    #state = m.cell.zero_state(batch_size[0], tf.float32)
-    state = m.initial_state
-    state = tf.convert_to_tensor(state)
-    state = state.eval()    
+    print("batch size", m.batch_size) 
     n_samples = data[0].shape[1]
     print("Testing %d samples:"%(n_samples))
    
@@ -164,8 +181,8 @@ def run_epoch(session, m, data, eval_op, verbose=False):
         mask = data[1][:,inds]
         y = data[2][inds]
 
-        cost, state, count, _ = session.run([m.cost, m.final_state, m.accuracy, eval_op],
-                            {m.input_data: x, m.mask: mask, m.labels: y, m.initial_state: state})
+        cost, count, _ = sess.run([m.cost, m.accuracy, eval_op],
+                            {m.input_data: x, m.mask: mask, m.labels: y})
         correct += count
         total += len(inds)
         b_ind += 1
