@@ -35,9 +35,9 @@ class SentimentModel(object):
         #self._targets = tf.placeholder(tf.int32, [batch_size, num_steps])
 
         #add LSTM cell and dropout nodes
-        cell = tf.nn.rnn_cell.BasicLSTMCell(size, forget_bias=0.0)
+        self.cell = tf.nn.rnn_cell.BasicLSTMCell(size, forget_bias=0.0)
         if is_training and config.keep_prob < 1:
-            cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=config.keep_prob)
+            self.cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=config.keep_prob)
 
         self.initial_state = cell.zero_state(batch_size, tf.float32)
 
