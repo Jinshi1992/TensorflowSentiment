@@ -58,7 +58,7 @@ class SentimentModel(object):
                 (cell_output, state) = cell(inputs[time_step, :, :], state)
                 outputs.append(tf.expand_dims(cell_output, 0))
         
-        outputs = tf.concat(0, outputs)*mask
+        outputs = tf.concat(outputs,0)*mask
         mask_sum = tf.reduce_sum(mask, 0)
         proj = tf.reduce_sum(outputs, 0)/mask_sum
         #NOW proj has shape [batch_size, size]
