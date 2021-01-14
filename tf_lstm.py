@@ -84,7 +84,7 @@ class SentimentModel(object):
         #mask_sum = tf.reduce_sum(mask, 0)
         #proj = tf.reduce_sum(outputs, 0)/mask_sum
         #NOW proj has shape [batch_size, size]
-        output = tf.transpose(output, [1, 0, 2])
+        #output = tf.transpose(output, [1, 0, 2])
         output = tf.reshape(output, [-1, 2*size*size])
         
         softmax_w = tf.get_variable("softmax_w", [2*size*size, 2])
