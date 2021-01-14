@@ -85,10 +85,10 @@ class SentimentModel(object):
         #proj = tf.reduce_sum(outputs, 0)/mask_sum
         #NOW proj has shape [batch_size, size]
         output = tf.transpose(output, [1, 0, 2])
-        output = tf.reshape(output, [-1, 2*vocab_size])
+        output = tf.reshape(output, [-1, 2*size])
         
-        softmax_w = tf.get_variable("softmax_w", [size, 2*vocab_size])
-        softmax_b = tf.get_variable("softmax_b", [vocab_size])
+        softmax_w = tf.get_variable("softmax_w", [2, 2*size])
+        softmax_b = tf.get_variable("softmax_b", [2])
         
         logits = tf.matmul(output, softmax_w) + softmax_b
         pred = tf.nn.softmax(logits)
