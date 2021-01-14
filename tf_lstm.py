@@ -91,7 +91,7 @@ class SentimentModel(object):
         softmax_b = tf.get_variable("softmax_b", [2])
         
         logits = tf.matmul(output, softmax_w) + softmax_b
-        pred = tf.nn.softmax(logits)
+        #pred = tf.nn.softmax(logits)
         loss = tf.nn.softmax_cross_entropy_with_logits(labels = labels, logits = logits) 
         self.cost = cost = tf.reduce_sum(loss) / batch_size
         correct_prediction = tf.equal(tf.argmax(pred,1), labels)
