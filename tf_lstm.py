@@ -25,7 +25,7 @@ class SentimentModel(object):
         size = config.hidden_size
         vocab_size = config.vocab_size
 
-        self.input_data = tf.placeholder(tf.int32, [size, batch_size], name="inputs")
+        self.input_data = tf.placeholder(tf.int32, [batch_size, size], name="inputs")
         self.mask = tf.placeholder(tf.float32, [num_steps, batch_size], name="mask")
         self.labels = tf.placeholder(tf.int64, [batch_size], name="labels")
         mask = tf.expand_dims(self.mask, -1)
