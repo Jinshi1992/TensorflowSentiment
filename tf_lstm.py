@@ -80,19 +80,38 @@ class SentimentModel(object):
             output = tf.concat([output_fw_seq, output_bw_seq], axis=-1)
             #output = tf.nn.dropout(output, self.dropout_pl)
         
-        outputs = tf.concat(outputs,0)*mask
-        mask_sum = tf.reduce_sum(mask, 0)
-        proj = tf.reduce_sum(outputs, 0)/mask_sum
+        #outputs = tf.concat(outputs,0)*mask
+        #mask_sum = tf.reduce_sum(mask, 0)
+        #proj = tf.reduce_sum(outputs, 0)/mask_sum
         #NOW proj has shape [batch_size, size]
+        
+        W = tf.get_variable(name="W",
+                                shape=[2 * self.hidden_dim * self.hidden_dim, self.num_tags],
+                                #shape=[self.num_tags, 2 * self.hidden_dim],
+                                initializer=tf.contrib.layers.xavier_initializer(),
+                                dtype=tf.float32)
+            #W = tf.Variable(tf.truncated_normal([self.hidden_dim, self.num_tags]))
+            
+        b = tf.get_variable(name="b",
+                                shape=[self.num_tags],
+                                initializer=tf.zeros_initializer(),
+                                dtype=tf.float32)
+        output = tf.transpose(output, [1, 0, 2])
+        output = tf.reshape(output, [-1, 2*size * size])
+        #output = tf.gather(output, int(output.get_shape()[0]) - 1)
+        self.pred = tf.matmul(output, W) + b
+        correctPred = tf.equal(tf.argmax(self.pred,1), tf.argmax(self.labels,1))
+        #self.accuracy = tf.reduce_mean(tf.cast(correctPred, tf.float32))
+        self.accuracy = tf.metrics.accuracy(tf.argmax(labels, 1), tf.argmax(self.pred,1))
 
-        softmax_w = tf.get_variable("softmax_w", [size, vocab_size])
-        softmax_b = tf.get_variable("softmax_b", [vocab_size])
-        logits = tf.matmul(proj, softmax_w) + softmax_b
-        pred = tf.nn.softmax(logits)
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = labels, logits = logits) 
+        #softmax_w = tf.get_variable("softmax_w", [size, vocab_size])
+        #softmax_b = tf.get_variable("softmax_b", [vocab_size])
+        #logits = tf.matmul(proj, softmax_w) + softmax_b
+        #pred = tf.nn.softmax(logits)
+        loss = tf.nn.softmax_cross_entropy_with_logits(labels = labels, logits = logits) 
         self.cost = cost = tf.reduce_sum(loss) / batch_size
-        correct_prediction = tf.equal(tf.argmax(pred,1), labels)
-        self.accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
+        #correct_prediction = tf.equal(tf.argmax(pred,1), labels)
+        #self.accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
 
         if not is_training:
             return
