@@ -87,7 +87,7 @@ class SentimentModel(object):
         output = tf.transpose(output, [1, 0, 2])
         output = tf.reshape(output, [-1, 2*size])
         
-        softmax_w = tf.get_variable("softmax_w", [2, 2*size])
+        softmax_w = tf.get_variable("softmax_w", [2*size, 2])
         softmax_b = tf.get_variable("softmax_b", [2])
         
         logits = tf.matmul(output, softmax_w) + softmax_b
