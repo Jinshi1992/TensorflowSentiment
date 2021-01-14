@@ -86,18 +86,18 @@ class SentimentModel(object):
         #NOW proj has shape [batch_size, size]
         
         W = tf.get_variable(name="W",
-                                shape=[2 * self.hidden_size * self.hidden_size, self.num_tags],
+                                shape=[2 * size * size, 2],
                                 #shape=[self.num_tags, 2 * self.hidden_dim],
                                 initializer=tf.contrib.layers.xavier_initializer(),
                                 dtype=tf.float32)
             #W = tf.Variable(tf.truncated_normal([self.hidden_dim, self.num_tags]))
             
         b = tf.get_variable(name="b",
-                                shape=[self.num_tags],
+                                shape=[2],
                                 initializer=tf.zeros_initializer(),
                                 dtype=tf.float32)
         output = tf.transpose(output, [1, 0, 2])
-        output = tf.reshape(output, [-1, 2*hidden_size * hidden_size])
+        output = tf.reshape(output, [-1, 2*size * size])
         #output = tf.gather(output, int(output.get_shape()[0]) - 1)
         self.pred = tf.matmul(output, W) + b
         correctPred = tf.equal(tf.argmax(self.pred,1), tf.argmax(self.labels,1))
