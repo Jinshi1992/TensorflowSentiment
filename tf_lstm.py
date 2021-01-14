@@ -25,7 +25,7 @@ class SentimentModel(object):
         size = config.hidden_size
         vocab_size = config.vocab_size
 
-        self.input_data = tf.placeholder(tf.int32, [num_steps, batch_size], name="inputs")
+        self.input_data = tf.placeholder(tf.int32, [size, batch_size], name="inputs")
         self.mask = tf.placeholder(tf.float32, [num_steps, batch_size], name="mask")
         self.labels = tf.placeholder(tf.int64, [batch_size], name="labels")
         mask = tf.expand_dims(self.mask, -1)
@@ -139,7 +139,7 @@ class Config(object):
     validFreq=370  # Compute the validation error after this number of update.
     saveFreq=1110  # Save the parameters after every saveFreq updates
     maxlen=100  # Sequence longer then this get ignored
-    batch_size=20  # The batch size during training.
+    batch_size=32  # The batch size during training.
     dataset='imdb'  # Parameter for extra option
     noise_std=0.
     use_dropout=True  # If False slightly faster, but worst test error. This frequently need a bigger model.
