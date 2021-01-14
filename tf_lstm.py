@@ -80,14 +80,17 @@ class SentimentModel(object):
             output = tf.concat([output_fw_seq, output_bw_seq], axis=-1)
             #output = tf.nn.dropout(output, self.dropout_pl)
         
-        outputs = tf.concat(outputs,0)*mask
-        mask_sum = tf.reduce_sum(mask, 0)
-        proj = tf.reduce_sum(outputs, 0)/mask_sum
+        #outputs = tf.concat(outputs,0)*mask
+        #mask_sum = tf.reduce_sum(mask, 0)
+        #proj = tf.reduce_sum(outputs, 0)/mask_sum
         #NOW proj has shape [batch_size, size]
+        output = tf.transpose(output, [1, 0, 2])
+        output = tf.reshape(output, [-1, 2*vocab_size])
         
-        softmax_w = tf.get_variable("softmax_w", [size, vocab_size])
+        softmax_w = tf.get_variable("softmax_w", [size, 2*vocab_size])
         softmax_b = tf.get_variable("softmax_b", [vocab_size])
-        logits = tf.matmul(proj, softmax_w) + softmax_b
+        
+        logits = tf.matmul(output, softmax_w) + softmax_b
         pred = tf.nn.softmax(logits)
         loss = tf.nn.softmax_cross_entropy_with_logits(labels = labels, logits = logits) 
         self.cost = cost = tf.reduce_sum(loss) / batch_size
